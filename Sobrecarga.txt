@@ -1,0 +1,43 @@
+using System;
+
+class Restaurante
+{
+    public static decimal CalcularPedido(string primerPlato, decimal precioPrimerPlato,
+                                         string bebida, decimal precioBebida)
+    {
+        Console.WriteLine($"Pedido: {primerPlato} + {bebida}");
+        return precioPrimerPlato + precioBebida;
+    }
+
+    public static decimal CalcularPedido(string primerPlato, decimal precioPrimerPlato,
+                                         string segundoPlato, decimal precioSegundoPlato,
+                                         string bebida, decimal precioBebida)
+    {
+        Console.WriteLine($"Pedido: {primerPlato} + {segundoPlato} + {bebida}");
+        return precioPrimerPlato + precioSegundoPlato + precioBebida;
+    }
+
+    public static decimal CalcularPedido(string primerPlato, decimal precioPrimerPlato,
+                                         string segundoPlato, decimal precioSegundoPlato,
+                                         string bebida, decimal precioBebida,
+                                         string postre, decimal precioPostre)
+    {
+        Console.WriteLine($"Pedido: {primerPlato} + {segundoPlato} + {bebida} + {postre}");
+        return precioPrimerPlato + precioSegundoPlato + precioBebida + precioPostre;
+    }
+
+    static void Main()
+    {
+        Console.WriteLine("=== Pedido 1 ===");
+        decimal total1 = CalcularPedido("Ensalada César", 5.50m, "Agua Mineral", 1.50m);
+        Console.WriteLine($"Total Pedido 1: ${total1:F2}\n");
+
+        Console.WriteLine("=== Pedido 2 ===");
+        decimal total2 = CalcularPedido("Sopa de Verduras", 4.00m, "Pollo al horno", 8.50m, "Refresco", 2.00m);
+        Console.WriteLine($"Total Pedido 2: ${total2:F2}\n");
+
+        Console.WriteLine("=== Pedido 3 ===");
+        decimal total3 = CalcularPedido("Bruschetta", 6.00m, "Bife de chorizo", 12.00m, "Vino Tinto", 3.50m, "Flan", 3.00m);
+        Console.WriteLine($"Total Pedido 3: ${total3:F2}");
+    }
+}
