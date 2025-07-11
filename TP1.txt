@@ -1,0 +1,203 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace CursoUniversitario
+{
+    class Estudiante
+    {
+        private string nombre;
+        private string apellido;
+        private string codigo;
+        private int semestre;
+        private int clasesAsistidas;
+        private double notaFinal;
+
+        public Estudiante(string nombre, string apellido, string codigo, int semestre, int clasesAsistidas, double notaFinal)
+        {
+            this.nombre = nombre;
+            this.apellido = apellido;
+            this.codigo = codigo;
+            this.semestre = semestre;
+            this.clasesAsistidas = clasesAsistidas;
+            this.notaFinal = notaFinal;
+        }
+
+        // Getters
+        public string GetNombre() => nombre;
+        public string GetApellido() => apellido;
+        public string GetCodigo() => codigo;
+        public int GetSemestre() => semestre;
+        public int GetClasesAsistidas() => clasesAsistidas;
+        public double GetNotaFinal() => notaFinal;
+
+        // Métodos
+        public bool TieneBajaAsistencia(int totalClases)
+        {
+            if (totalClases == 0) return false;
+            double porcentaje = (clasesAsistidas * 100.0) / totalClases;
+            return porcentaje < 40.0;
+        }
+
+        public void MostrarDatos()
+        {
+            Console.WriteLine($"Nombre: {nombre} {apellido} | Código: {codigo} | Semestre: {semestre} | Asistencias: {clasesAsistidas} | Nota Final: {notaFinal:F2}");
+        }
+    }
+
+    class Curso
+    {
+        private string nombreCurso;
+        private int anio;
+        private string especialidad;
+        private List<Estudiante> estudiantes;
+
+        public Curso(string nombreCurso, int anio, string especialidad)
+        {
+            this.nombreCurso = nombreCurso;
+            this.anio = anio;
+            this.especialidad = especialidad;
+            estudiantes = new List<Estudiante>();
+        }
+
+        public bool AgregarEstudiante(Estudiante nuevo)
+        {
+            if (estudiantes.Any(e => e.GetCodigo() == nuevo.GetCodigo()))
+            {
+                Console.WriteLine("No se puede añadir el estudiante. Código ya existente.");
+                return false;
+            }
+            estudiantes.Add(nuevo);
+            Console.WriteLine("Estudiante agregado exitosamente.");
+            return true;
+        }
+
+        public Estudiante BuscarPorCodigo(string codigo)
+        {
+            return estudiantes.FirstOrDefault(e => e.GetCodigo() == codigo);
+        }
+
+        public void BuscarYMostrar(string codigo)
+        {
+            var est = BuscarPorCodigo(codigo);
+            if (est != null) est.MostrarDatos();
+            else Console.WriteLine("Estudiante no encontrado.");
+        }
+
+        // Sobrecarga de métodos para eliminar
+        public bool EliminarEstudiante(string codigo)
+        {
+            var est = BuscarPorCodigo(codigo);
+            if (est != null)
+            {
+                estudiantes.Remove(est);
+                Console.WriteLine("Estudiante eliminado por código.");
+                return true;
+            }
+            Console.WriteLine("No se encontró el estudiante con ese código.");
+            return false;
+        }
+
+        public bool EliminarEstudiante(Estudiante estudiante)
+        {
+            if (estudiantes.Remove(estudiante))
+            {
+                Console.WriteLine("Estudiante eliminado por objeto.");
+                return true;
+            }
+            Console.WriteLine("No se pudo eliminar el estudiante.");
+            return false;
+        }
+
+        public bool EliminarEstudiante(string nombre, string apellido)
+        {
+            var est = estudiantes.FirstOrDefault(e => e.GetNombre() == nombre && e.GetApellido() == apellido);
+            if (est != null)
+            {
+                estudiantes.Remove(est);
+                Console.WriteLine("Estudiante eliminado por nombre y apellido.");
+                return true;
+            }
+            Console.WriteLine("No se encontró el estudiante por nombre y apellido.");
+            return false;
+        }
+
+        public double CalcularPromedio()
+        {
+            if (estudiantes.Count == 0) return 0;
+            return estudiantes.Average(e => e.GetNotaFinal());
+        }
+
+        public void MostrarAprobados()
+        {
+            var aprobados = estudiantes.Where(e => e.GetNotaFinal() >= 3.0).ToList();
+            Console.WriteLine($"Cantidad de estudiantes aprobados: {aprobados.Count}");
+            if (estudiantes.Count > 0)
+            {
+                double porcentaje = (aprobados.Count * 100.0) / estudiantes.Count;
+                Console.WriteLine($"Porcentaje de aprobación: {porcentaje:F2}%");
+            }
+        }
+
+        public void MostrarNotasExtremas()
+        {
+            if (estudiantes.Count == 0)
+            {
+                Console.WriteLine("No hay estudiantes en el curso.");
+                return;
+            }
+
+            var mejor = estudiantes.OrderByDescending(e => e.GetNotaFinal()).First();
+            var peor = estudiantes.OrderBy(e => e.GetNotaFinal()).First();
+            Console.WriteLine("Estudiante con la nota más alta:");
+            mejor.MostrarDatos();
+            Console.WriteLine("Estudiante con la nota más baja:");
+            peor.MostrarDatos();
+        }
+
+        public void EliminarInasistentes(int totalClases)
+        {
+            int eliminados = estudiantes.RemoveAll(e => e.TieneBajaAsistencia(totalClases));
+            if (eliminados > 0)
+                Console.WriteLine($"{eliminados} estudiante(s) eliminado(s) por baja asistencia.");
+            else
+                Console.WriteLine("No hay estudiantes con baja asistencia.");
+        }
+
+        public void MostrarResumen()
+        {
+            Console.WriteLine($"Curso: {nombreCurso} | Año: {anio} | Especialidad: {especialidad}");
+            Console.WriteLine($"Cantidad de estudiantes: {estudiantes.Count}");
+            Console.WriteLine($"Promedio general del curso: {CalcularPromedio():F2}");
+            MostrarAprobados();
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Curso curso = new Curso("Programación I", 2025, "Computación");
+
+            curso.AgregarEstudiante(new Estudiante("Ana", "Gomez", "E001", 1, 12, 4.5));
+            curso.AgregarEstudiante(new Estudiante("Luis", "Martinez", "E002", 2, 5, 2.8));
+            curso.AgregarEstudiante(new Estudiante("Elena", "Torres", "E003", 1, 3, 3.5));
+
+            curso.BuscarYMostrar("E002");
+
+            curso.EliminarEstudiante("E002");
+            curso.EliminarEstudiante("Pedro", "Perez");
+            curso.EliminarEstudiante(new Estudiante("Elena", "Torres", "E003", 1, 3, 3.5)); // No va a eliminar porque es otra instancia
+
+            curso.EliminarEstudiante("Elena", "Torres");
+
+            curso.MostrarResumen();
+
+            curso.MostrarNotasExtremas();
+
+            curso.EliminarInasistentes(10);
+
+            curso.MostrarResumen();
+        }
+    }
+}
