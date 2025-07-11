@@ -1,0 +1,100 @@
+using System;
+
+abstract class Prestamo
+{
+    protected double monto_total;
+    protected double tasa_interes;
+    protected int plazo_meses;
+
+    public Prestamo(double monto_total, double tasa_interes, int plazo_meses)
+    {
+        this.monto_total = monto_total;
+        this.tasa_interes = tasa_interes;
+        this.plazo_meses = plazo_meses;
+    }
+
+    public abstract double CalcularCuotaMensual();
+    public abstract void MostrarInformacion();
+}
+
+class PrestamoHipotecario : Prestamo
+{
+    private double valor_propiedad;
+
+    public PrestamoHipotecario(double monto_total, double tasa_interes, int plazo_meses, double valor_propiedad)
+        : base(monto_total, tasa_interes, plazo_meses)
+    {
+        this.valor_propiedad = valor_propiedad;
+    }
+
+    public override double CalcularCuotaMensual()
+    {
+        double cuota = (monto_total + tasa_interes) / plazo_meses;
+
+        if (valor_propiedad > 400000)
+        {
+            cuota += monto_total * 0.02 / plazo_meses;
+        }
+
+        return cuota;
+    }
+
+    public override void MostrarInformacion()
+    {
+        Console.WriteLine("=== Préstamo Hipotecario ===");
+        Console.WriteLine($"Monto total: ${monto_total}");
+        Console.WriteLine($"Tasa de interés: ${tasa_interes}");
+        Console.WriteLine($"Plazo: {plazo_meses} meses");
+        Console.WriteLine($"Valor propiedad: ${valor_propiedad}");
+        Console.WriteLine($"Cuota mensual estimada: ${CalcularCuotaMensual():0.00}");
+        Console.WriteLine();
+    }
+}
+
+class PrestamoPersonal : Prestamo
+{
+    private string destino_prestamo;
+
+    public PrestamoPersonal(double monto_total, double tasa_interes, int plazo_meses, string destino_prestamo)
+        : base(monto_total, tasa_interes, plazo_meses)
+    {
+        this.destino_prestamo = destino_prestamo;
+    }
+
+    public override double CalcularCuotaMensual()
+    {
+        double cuota_base = (monto_total + tasa_interes) / plazo_meses;
+
+        if (destino_prestamo.ToLower() == "vehiculo" || destino_prestamo.ToLower() == "viaje")
+        {
+            cuota_base *= 1.02; 
+        }
+
+        return cuota_base;
+    }
+
+    public override void MostrarInformacion()
+    {
+        Console.WriteLine("=== Préstamo Personal ===");
+        Console.WriteLine($"Monto total: ${monto_total}");
+        Console.WriteLine($"Tasa de interés: ${tasa_interes}");
+        Console.WriteLine($"Plazo: {plazo_meses} meses");
+        Console.WriteLine($"Destino del préstamo: {destino_prestamo}");
+        Console.WriteLine($"Cuota mensual estimada: ${CalcularCuotaMensual():0.00}");
+        Console.WriteLine();
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Prestamo hipotecario = new PrestamoHipotecario(800000, 60000, 120, 450000);
+        Prestamo personal1 = new PrestamoPersonal(200000, 30000, 24, "vehiculo");
+        Prestamo personal2 = new PrestamoPersonal(150000, 25000, 18, "educación");
+
+        hipotecario.MostrarInformacion();
+        personal1.MostrarInformacion();
+        personal2.MostrarInformacion();
+    }
+}
