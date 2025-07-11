@@ -1,0 +1,206 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace InmobiliariaApp
+{
+    class Barrio
+    {
+        public string Nombre { get; }
+        public double PrecioM2 { get; }
+        public bool EsPeligroso { get; }
+
+        public Barrio(string nombre, double precioM2, bool esPeligroso)
+        {
+            Nombre = nombre;
+            PrecioM2 = precioM2;
+            EsPeligroso = esPeligroso;
+        }
+    }
+
+    class Propiedad
+    {
+        public string Direccion { get; }
+        public double MetrosCuadrados { get; }
+        public string TipoOperacion { get; } 
+        public string TipoPropiedad { get; } 
+        public Barrio Barrio { get; }
+
+        public Propiedad(string direccion, double metros, string tipoOperacion, string tipoPropiedad, Barrio barrio)
+        {
+            Direccion = direccion;
+            MetrosCuadrados = metros;
+            TipoOperacion = tipoOperacion;
+            TipoPropiedad = tipoPropiedad;
+            Barrio = barrio;
+        }
+
+        public double CalcularValor()
+        {
+            double valorBase = MetrosCuadrados * Barrio.PrecioM2;
+
+            if (TipoPropiedad.ToLower() == "ph" && valorBase < 500000)
+                valorBase = 500000;
+
+            if (TipoPropiedad.ToLower() == "departamento")
+                valorBase *= 0.9; 
+
+            if (Barrio.EsPeligroso)
+                valorBase *= 0.85; 
+
+            return valorBase;
+        }
+
+        
+        public double CalcularComision()
+        {
+            double valor = CalcularValor();
+
+            if (TipoOperacion.ToLower() == "alquiler")
+                return (12 * valor) / 50000;
+
+            if (TipoOperacion.ToLower() == "venta")
+                return valor * 0.015;
+
+            return 0;
+        }
+    }
+
+    class Empleado
+    {
+        public string Nombre { get; }
+        public string Apellido { get; }
+        public string Id { get; }
+        public double Sueldo { get; private set; }
+
+        public Empleado(string nombre, string apellido, string id, double sueldo)
+        {
+            Nombre = nombre;
+            Apellido = apellido;
+            Id = id;
+            Sueldo = sueldo;
+        }
+
+        
+        public void ActualizarSueldo(Propiedad prop)
+        {
+            double comision = prop.CalcularComision(); 
+            Sueldo += comision;
+            Console.WriteLine($"Sueldo actualizado de {Nombre} {Apellido}: ${Sueldo:F2}");
+        }
+
+        public void Mostrar()
+        {
+            Console.WriteLine($"Empleado: {Nombre} {Apellido} | ID: {Id} | Sueldo: ${Sueldo:F2}");
+        }
+    }
+
+    class Inmobiliaria
+    {
+        public string Nombre { get; }
+        private List<Empleado> empleados;
+        private List<Propiedad> propiedades;
+
+        public Inmobiliaria(string nombre)
+        {
+            Nombre = nombre;
+            empleados = new List<Empleado>();
+            propiedades = new List<Propiedad>();
+        }
+
+        public void AgregarEmpleado(Empleado e) => empleados.Add(e);
+        public void AgregarPropiedad(Propiedad p) => propiedades.Add(p);
+
+        public void ListarOperaciones(string tipo)
+        {
+            var filtradas = propiedades.Where(p => p.TipoOperacion.ToLower() == tipo.ToLower());
+            Console.WriteLine($"--- Operaciones de tipo {tipo} ---");
+            foreach (var p in filtradas)
+                Console.WriteLine($"Dirección: {p.Direccion} | Operación: {p.TipoOperacion}");
+        }
+
+        public void ListarPropiedades()
+        {
+            Console.WriteLine("--- Lista de propiedades ---");
+            foreach (var p in propiedades)
+            {
+                Console.WriteLine($"Dirección: {p.Direccion} | Metros: {p.MetrosCuadrados} | Tipo: {p.TipoOperacion} | Barrio: {p.Barrio.Nombre}");
+            }
+        }
+
+        public void ListarEmpleados(string id = null)
+        {
+            Console.WriteLine("--- Lista de empleados ---");
+            if (id != null)
+            {
+                var emp = empleados.FirstOrDefault(e => e.Id == id);
+                if (emp != null) emp.Mostrar();
+                else Console.WriteLine("Empleado no encontrado.");
+            }
+            else
+            {
+                foreach (var e in empleados) e.Mostrar();
+            }
+        }
+
+        public void MostrarEmpleadoMayorSueldo()
+        {
+            if (empleados.Count == 0)
+            {
+                Console.WriteLine("No hay empleados registrados.");
+                return;
+            }
+
+            var top = empleados.OrderByDescending(e => e.Sueldo).First();
+            Console.WriteLine($"Empleado con mayor sueldo: {top.Nombre} {top.Apellido} - ${top.Sueldo:F2}");
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            
+            Barrio centro = new Barrio("Centro", 1500, false);
+            Barrio sur = new Barrio("Barrio Sur", 1000, true);
+
+            
+            Propiedad p1 = new Propiedad("Av. Siempre Viva 123", 100, "Venta", "casa", centro);
+            Propiedad p2 = new Propiedad("Calle Falsa 456", 80, "Alquiler", "departamento", sur);
+            Propiedad p3 = new Propiedad("Pasaje Sol 789", 60, "Venta", "ph", centro);
+
+            
+            Empleado e1 = new Empleado("Juan", "Gómez", "E001", 120000);
+            Empleado e2 = new Empleado("Lucía", "Pérez", "E002", 130000);
+
+            
+            Inmobiliaria inmobiliaria = new Inmobiliaria("InmoFácil");
+            inmobiliaria.AgregarEmpleado(e1);
+            inmobiliaria.AgregarEmpleado(e2);
+            inmobiliaria.AgregarPropiedad(p1);
+            inmobiliaria.AgregarPropiedad(p2);
+            inmobiliaria.AgregarPropiedad(p3);
+
+            
+            Console.WriteLine("\n--- Comisión y actualización de sueldo ---");
+            double comision = p1.CalcularComision();
+            Console.WriteLine($"Comisión por venta: ${comision:F2}");
+            e1.ActualizarSueldo(p1);
+
+            Console.WriteLine("\n--- Lista de propiedades ---");
+            inmobiliaria.ListarPropiedades();
+
+            Console.WriteLine("\n--- Lista de empleados ---");
+            inmobiliaria.ListarEmpleados();
+
+            Console.WriteLine("\n--- Empleado con mayor sueldo ---");
+            inmobiliaria.MostrarEmpleadoMayorSueldo();
+
+            Console.WriteLine("\n--- Listar operaciones: VENTA ---");
+            inmobiliaria.ListarOperaciones("Venta");
+
+            Console.WriteLine("\n--- Información de empleado por ID ---");
+            inmobiliaria.ListarEmpleados("E002");
+        }
+    }
+}
