@@ -1,0 +1,166 @@
+using System;
+using System.Collections.Generic;
+
+class ProductoElectronico
+{
+    public string Nombre { get; set; }
+    public double Precio { get; set; }
+    public string Marca { get; set; }
+    public static List<ProductoElectronico> ListaProductos = new List<ProductoElectronico>();
+
+    public ProductoElectronico(string nombre, double precio, string marca)
+    {
+        Nombre = nombre;
+        Precio = precio;
+        Marca = marca;
+        ListaProductos.Add(this);
+    }
+
+    public void AplicarDescuento(double porcentaje)
+    {
+        Precio -= Precio * (porcentaje / 100);
+    }
+
+    public virtual string MostrarInformacion()
+    {
+        return $"Nombre: {Nombre}, Marca: {Marca}, Precio: {Precio}";
+    }
+
+    public string ObtenerCategoriaPrecio()
+    {
+        if (Precio < 100000) return "Económico";
+        else if (Precio <= 500000) return "Estándar";
+        else return "Premium";
+    }
+
+    public bool EsMarcaReconocida()
+    {
+        string[] marcasReconocidas = { "Apple", "Samsung", "Xiaomi", "Motorola" };
+        foreach (var m in marcasReconocidas)
+        {
+            if (Marca == m) return true;
+        }
+        return false;
+    }
+
+    public static List<ProductoElectronico> FiltrarProductosPorPrecio()
+    {
+        return ListaProductos.FindAll(p => p.Precio < 500000);
+    }
+
+    public static List<ProductoElectronico> IdentificarNotebooksCon8GB()
+    {
+        List<ProductoElectronico> resultado = new List<ProductoElectronico>();
+        foreach (var p in ListaProductos)
+        {
+            if (p is Notebook nb && nb.MemoriaRAM == 8)
+            {
+                resultado.Add(nb);
+            }
+        }
+        return resultado;
+    }
+}
+
+class Celular : ProductoElectronico
+{
+    public string SistemaOperativo { get; set; }
+
+    public Celular(string nombre, double precio, string marca, string sistemaOperativo)
+        : base(nombre, precio, marca)
+    {
+        SistemaOperativo = sistemaOperativo;
+    }
+
+    public void CalcularPrecioConDescuentoEspecial()
+    {
+        if (SistemaOperativo.ToLower() == "android" && EsMarcaReconocida())
+        {
+            Precio *= 0.7;
+        }
+    }
+
+    public override string MostrarInformacion()
+    {
+        return base.MostrarInformacion() + $", SO: {SistemaOperativo}";
+    }
+}
+
+class Notebook : ProductoElectronico
+{
+    public int MemoriaRAM { get; set; }
+
+    public Notebook(string nombre, double precio, string marca, int memoriaRAM)
+        : base(nombre, precio, marca)
+    {
+        MemoriaRAM = memoriaRAM;
+    }
+
+    public bool SugerirUsoProfesional()
+    {
+        string categoria = ObtenerCategoriaPrecio();
+        return (MemoriaRAM > 16 && (categoria == "Estándar" || categoria == "Premium"));
+    }
+
+    public override string MostrarInformacion()
+    {
+        return base.MostrarInformacion() + $", RAM: {MemoriaRAM} GB";
+    }
+}
+
+class Televisor : ProductoElectronico
+{
+    public string Resolucion { get; set; }
+
+    public Televisor(string nombre, double precio, string marca, string resolucion)
+        : base(nombre, precio, marca)
+    {
+        Resolucion = resolucion;
+    }
+
+    public string EvaluarCalidad()
+    {
+        string categoria = ObtenerCategoriaPrecio();
+        if (categoria == "Premium" && Resolucion == "3840x2160")
+            return "Televisor 4K de alta gama";
+        else if (categoria == "Estándar" && Resolucion == "1920x1080")
+            return "Televisor Full HD con buena relación calidad-precio";
+        else if (categoria == "Económico" && Resolucion == "1280x720")
+            return "Televisor básico para uso general";
+        else
+            return "Televisor con características estándar";
+    }
+
+    public override string MostrarInformacion()
+    {
+        return base.MostrarInformacion() + $", Resolución: {Resolucion}";
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        var cel1 = new Celular("Galaxy A53", 150000, "Samsung", "Android");
+        var cel2 = new Celular("iPhone 14", 950000, "Apple", "iOS");
+        var nb1 = new Notebook("HP Pavilion", 300000, "HP", 8);
+        var nb2 = new Notebook("Lenovo ThinkPad", 700000, "Lenovo", 16);
+        var tv1 = new Televisor("Samsung 4K", 600000, "Samsung", "3840x2160");
+        var tv2 = new Televisor("LG Smart", 200000, "LG", "1920x1080");
+
+        cel1.CalcularPrecioConDescuentoEspecial();
+        Console.WriteLine(cel1.MostrarInformacion());
+
+        Console.WriteLine(nb2.MostrarInformacion());
+        Console.WriteLine("Uso profesional: " + nb2.SugerirUsoProfesional());
+
+        Console.WriteLine(tv1.MostrarInformacion());
+        Console.WriteLine(tv1.EvaluarCalidad());
+
+        Console.WriteLine("Notebooks con 8GB:");
+        foreach (var nb in ProductoElectronico.IdentificarNotebooksCon8GB())
+        {
+            Console.WriteLine(nb.MostrarInformacion());
+        }
+    }
+}
